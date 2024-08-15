@@ -21,22 +21,37 @@ import com.dpktech.accounts.dto.ErrorResponseDto;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
+	
+	/**
+	 * Handles Error Response whenever any field validation failed E If user gives
+	 * any invalid value the this method handle the input validation error
+	 */
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		Map<String,String> validationErrors=new HashMap<>();
-		List<ObjectError> validationErrorList=ex.getBindingResult().getAllErrors();
-		
-		validationErrorList.forEach((error)->{
-			String filedName=((FieldError)error).getField();
-			String validationMsg=error.getDefaultMessage();
-			
+		Map<String, String> validationErrors = new HashMap<>();
+
+		// below lines gives all validation errors failed in the input which is received
+		List<ObjectError> validationErrorList = ex.getBindingResult().getAllErrors();
+
+		/**
+		 * Iterating each error and getting the field name and validation failed message
+		 * for each field
+		 */
+		validationErrorList.forEach((error) -> {
+			String filedName = ((FieldError) error).getField();
+			String validationMsg = error.getDefaultMessage();
+
+			// putting each error and message in HashMap
 			validationErrors.put(filedName, validationMsg);
 		});
 
+		/**
+		 * sending the validation error as part of response entity with status as Bad
+		 * Request
+		 */
 		return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
-				}
+	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception exception, WebRequest request) {
